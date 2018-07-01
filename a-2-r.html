@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Mini Fact Find Bot Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/botui/build/botui.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/botui/build/botui-theme-default.css" />
+    <link rel="stylesheet" href="main.css" />
+</head>
+
+<body>
+    <div class="botui-app-container" id="my-botui-app">
+        <bot-ui></bot-ui>
+    </div>
+    <div style="
+    position: fixed;
+    bottom: 0;
+    width: 78%;
+    ">
+        <ul class="progress-tracker anim-ripple-large anim-path">
+            <li class="progress-step is-complete">
+                <a href="/">
+                    <span class="progress-marker"></span>
+                </a>
+            </li>
+            <li class="progress-step is-complete">
+                <a href="/email">
+                    <span class="progress-marker"></span>
+                </a>
+            </li>
+            <li class="progress-step is-active">
+                <a href="/a-2-r">
+                    <span class="progress-marker"></span>
+                </a>
+
+            </li>
+        </ul>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/vue/latest/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/botui/build/botui.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io();
+
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.addEventListener('speechstart', () => {
+        console.log('Speech has been detected.');
+    });
+
+    var res = ''
+
+    recognition.onnomatch = function () {
+        console.log('Speech not recognised');
+
+        botui.message.add({
+            delay: 1000,
+            loading: true,
+            content: '... Come again?'
+        })
+
+        recognition.start();
+    }
+
+    recognition.addEventListener('result', (e) => {
+        console.log('Result has been detected.');
+        var last = e.results.length - 1;
+
+        res = e.results[last][0].transcript;
+
+        botui.message.add({
+            human: true,
+            content: res
+        })
+
+        recognition.stop();
+
+        socket.emit('a2r-score', res);
+
+        socket.on('profile', (text) => {
+            console.log('profile', text);
+
+            botui.message.add({
+                content: 'Ok, perfect now generating your user profile... How does it look?'
+            }).then(function () {
+                botui.message.add({
+                    delay: 1000,
+                    content: 'Name: ' + text.name
+                })
+                botui.message.add({
+                    delay: 1000,
+                    content: 'Email: ' + text.email
+                })
+                botui.message.add({
+                    delay: 1000,
+                    content: 'Atitude to Risk Score: ' + text.a2rScore
+                })
+            }).then(function () {
+                botui.action.button({
+                    delay: 1000,
+                    loading: true,
+                    action: [{
+                            text: 'All good',
+                            value: true
+                        },
+                        {
+                            text: 'Needs tweaks',
+                            value: false
+                        }
+                    ]
+                }).then(function (res) {
+                    if (res.value) {
+                        return window.location.href = '/profile-done';
+                    } else {
+                        window.location.href = '/edit-profile'
+                    };
+                });
+            })
+        });
+    });
+
+    var botui = new BotUI('my-botui-app');
+
+    botui.message.add({
+        delay: 1200,
+        loading: true,
+        content: 'How would you describe your tolerance to risk?'
+    }).then(function () {
+        recognition.start()
+    });
+</script>
+
+</html>

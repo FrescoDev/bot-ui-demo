@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Mini Fact Find Bot Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/botui/build/botui.min.css" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/botui/build/botui-theme-default.css" />
+    <link rel="stylesheet" href="main.css" />
+</head>
+
+<body>
+    <div class="botui-app-container" id="my-botui-app">
+        <bot-ui></bot-ui>
+    </div>
+    </div>
+    <div style="
+position: fixed;
+bottom: 0;
+width: 78%;
+">
+        <ul class="progress-tracker anim-ripple-large anim-path">
+            <li class="progress-step is-complete">
+                <a href="/">
+                    <span class="progress-marker"></span>
+                </a>
+            </li>
+            <li class="progress-step is-complete">
+                <a href="/email">
+                    <span class="progress-marker"></span>
+                </a>
+            </li>
+            <li class="progress-step is-active">
+                <a href="/a-2-r">
+                    <span class="progress-marker"></span>
+                </a>
+
+            </li>
+        </ul>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/vue/latest/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/botui/build/botui.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    var socket = io();
+
+    var botui = new BotUI('my-botui-app');
+
+    botui.message.add({
+        delay: 1200,
+        loading: true,
+        content: 'All done! :)'
+    });
+</script>
+
+</html>
